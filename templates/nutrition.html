@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% set active_page = 'nutrition' %}
+
+{% block content %}
+
+<header class="masthead">
+    <br/>
+    <br/>
+            <div class="col-lg-9 align-items-center justify-content-center">
+                <div >
+                    <div class="card-wrapper">
+                                        <div class="col-lg-8">
+                                            <div class="card h-100">
+                                              <div class="card-body">
+                                                <p class="card-text"> You are at {{  item.restaurant }}</p>
+                                              </div>
+
+                                              <div class="embed-responsive embed-responsive-16by9">
+                                                <a href="#">
+                                                  <img class="card-img-top embed-responsive-item" src="{{ url_for('uploads', filename=item.picture) }}">
+                                                </a>
+                                              </div>
+                                              <div class="card-body">
+                                                <p class="card-text">Nutrition Information</p>
+                                                <p class="card-text">Carbs: {{  item.carbs }}g</p>
+                                                <p class="card-text">Protein: {{  item.protein }}g</p>
+                                                <p class="card-text">Fat: {{  item.fat }}g</p>
+                                              </div>
+
+                                            </div>
+                                        </div>
+
+                       </div>
+                    <br/>
+                    <div class="col-lg-8 align-items-center justify-content-center">
+
+                        <a class="btn btn-info btn-xl" href="{{ url_for('home') }}"> Home </a>
+                    </div>
+                </div>
+            </div>
+</header>
+
+{% endblock %}

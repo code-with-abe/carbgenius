@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, g, flash
+from flask import Flask, send_from_directory, render_template, request, redirect, url_for, g, flash
 import sqlite3
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed, FileRequired
@@ -13,7 +13,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "secretkey"
 app.config["ALLOWED_IMAGE_EXTENSIONS"] = ["jpeg", "jpg", "png"]
-app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
+app.config["MAX_CONTENT_LENGTH"] = 32 * 1024 * 1024
 app.config["IMAGE_UPLOADS"] = os.path.join(basedir, "uploads")
 
 
@@ -29,13 +29,6 @@ class NewFeedbackForm(FlaskForm):
 
 
 class NewPictureForm(FlaskForm):
-    title = StringField("Title", validators=[InputRequired("Input is required!"), DataRequired("Data is required!"),
-                                             Length(min=5, max=20,
-                                                    message="Input must be between 5 and 20 characters long")])
-    feedback = TextAreaField("Feedback",
-                             validators=[InputRequired("Input is required!"), DataRequired("Data is required!"),
-                                         Length(min=5, max=20,
-                                                message="Input must be between 5 and 20 characters long")])
 
     image = FileField("Image",
                       validators=[FileRequired(), FileAllowed(app.config["ALLOWED_IMAGE_EXTENSIONS"], "Images only!")])
@@ -47,6 +40,38 @@ class NewPictureForm(FlaskForm):
 def home():
     return render_template("home.html")
 
+@app.route("/uploads/<filename>")
+def uploads(filename):
+    return send_from_directory(app.config["IMAGE_UPLOADS"], filename)
+
+@app.route("/nutrition")
+def nutrition():
+    conn = get_db()
+    c = conn.cursor()
+
+    picture_from_db = c.execute("""SELECT
+                        p.id, p.picture_name, p.request_timestamp,r.restaurant_name
+                        FROM
+                        cg_pictures AS p
+                        INNER JOIN cg_restaurants AS r ON p.item_group = r.id
+                        WHERE p.id in (select max(id) from cg_pictures)                        
+        """)
+
+    row = c.fetchone()
+    try:
+        item = {
+            "id": row[0],
+            "picture": row[1],
+            "timestamp": row[2],
+            "restaurant": row[3],
+            "carbs": 42,
+            "protein": 15,
+            "fat": 12
+        }
+    except:
+        item = {}
+
+    return render_template("nutrition.html", item=item)
 
 @app.route("/feedback", methods=["GET", "POST"])
 def feedback():
@@ -90,18 +115,20 @@ def upload():
         filename = secure_filename(filename)
         form.image.data.save(os.path.join(app.config["IMAGE_UPLOADS"], filename))
         # Process the form data
-        c.execute("""INSERT INTO cg_feedback
-                        (title, feedback)
-                            VALUES (?,?)""",
+        c.execute("""INSERT INTO cg_pictures
+                        (request_timestamp, picture_name, picture_path,item_group)
+                            VALUES (?,?,?,?)""",
                   (
-                      form.title.data,
-                      form.feedback.data
+                      now,
+                      filename,
+                      app.config["IMAGE_UPLOADS"],
+                      form.restaurant.data
                   )
                   )
         conn.commit()
         # Redirect to some page
-        flash("Item {} has been successfully submitted".format(request.form.get("title")), "success")
-        return redirect(url_for("home"))
+        flash("Here's the nutrition information")
+        return redirect(url_for("nutrition"))
 
     if form.errors:
         flash("{}".format(form.errors), "danger")

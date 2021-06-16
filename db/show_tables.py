@@ -69,6 +69,24 @@ def show_feedback():
         print("Something went wrong, please run db_init.py to initialize the database.")
         conn.close()
 
+def show_pictures():
+    try:
+        comments = c.execute("""SELECT
+                                c.id,c.request_timestamp, c.picture_name
+                             FROM
+                                cg_pictures AS c
+        """)
+
+        print("PICTURES")
+        print("#############")
+        for row in comments:
+            print("ID:             ", row[0]),
+            print("Timestamp:        ", row[1]),
+            print("Picture Name:           ", row[2]),
+            print("\n")
+    except:
+        print("Something went wrong, please run db_init.py to initialize the database.")
+        conn.close()
 
 if table == "users":
     show_users()
@@ -76,6 +94,8 @@ elif table == "restaurants":
     show_restaurants()
 elif table == "feedback":
     show_feedback()
+elif table == "pictures":
+    show_pictures()
 elif table == "all":
     show_users()
     show_restaurants()

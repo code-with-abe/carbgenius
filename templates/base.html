@@ -27,7 +27,10 @@
           <li class="nav-item {{ 'active' if active_page == 'home' else '' }}">
             <a href="{{ url_for('home') }}" class="nav-link">Home</a>
           </li>
-          <li class="nav-item">
+          <li class="nav-item {{ 'active' if active_page == 'nutrition' else '' }}">
+            <a href="{{ url_for('nutrition') }}" class="nav-link">Nutrition</a>
+          </li>
+          <li class="nav-item {{ 'active' if active_page == 'feedback' else '' }}">
             <a href="{{ url_for('feedback') }}" class="nav-link ">Feedback</a>
           </li>
         </ul>
